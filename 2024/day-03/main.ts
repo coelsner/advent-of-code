@@ -16,7 +16,7 @@ const result: number[] = [];
 
 let enabled = true;
 matches?.map((match) => {
-  console.log(match);
+  //console.log(match);
   if (match[2] && match[3]) {
     const a = parseInt(match[2]);
     const b = parseInt(match[3]);
@@ -30,7 +30,7 @@ matches?.map((match) => {
   }
 });
 
-console.log(result);
+//console.log(result);
 console.log(result.reduce((prev, curr) => {
   return prev + curr;
 }));
