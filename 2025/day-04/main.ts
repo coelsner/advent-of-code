@@ -1,5 +1,3 @@
-import { toUSVString } from "node:util";
-
 const test_input = `..@@.@@@@.
 @@@.@.@.@@
 @@@@@.@.@@
@@ -13,73 +11,84 @@ const test_input = `..@@.@@@@.
 
 const real_input = await Deno.readTextFile("./day-04/input.txt");
 
-type Shelf = {
-  x: number;
-  y: number;
-  isOccupied: boolean;
-  isAccessible: boolean;
-};
+class Warehouse {
+  constructor(
+    public readonly shelves: boolean[][],
+    public readonly width: number,
+    public readonly height: number
+  ) {}
+
+  isAccessible(x: number, y: number) : boolean {
+    const isFilled = this.shelves[x][y];
+    const adjacents = getAdjacents(x, y, this);
+
+    //console.debug(adjacent);
+    return isFilled && adjacents.map((a) => {
+      return this.shelves[a.x][a.y]
+    }).filter(a => a === true).length < 4;
+  }
+
+  toString(): string[] {
+    return this.shelves.map((r) => {
+      return r.map((v) => (v ? "@" : ".")).join("");
+    });
+  }
+}
 
 if (import.meta.main) {
   const input = real_input;
-  const warehouse: Shelf[] = getWarehouse(input.split("\n"));
+  const warehouse: Warehouse = createWarehouse(input.split("\n"));
 
-  //console.debug(warehouse.map(s => display(s)).join(""));
-  
-  for (const shelf of warehouse) {
-    shelf.isAccessible = isAccessible(shelf, warehouse);
+  console.debug(warehouse.toString().join("\n"));
+
+  const result = warehouse.shelves.map((r, rowIdx) => {
+    return r.map((c, colIdx) => {
+      return warehouse.isAccessible(rowIdx, colIdx);
+    });
+  });
+
+  //console.debug(result.map((s) => s.map((x) => x?"x":".").join("")).join("\n"));
+  console.log("Result:", result.flatMap(r => r.filter(c => c === true)).length);
+}
+
+function createWarehouse(rows: string[]): Warehouse {
+  const height = rows.length;
+  const width = rows[0].split("").length;
+
+  const result: boolean[][] = [];
+
+  for (let rowIdx = 0; rowIdx < height; rowIdx++) {
+    const cols: boolean[] = rows[rowIdx].split("").map((column) => {
+      return column === "@" ? true : false;
+    });
+    result.push(cols);
   }
 
-  console.debug(warehouse.map(s => display(s)).join(""));
-  console.log("Result:", warehouse.filter(s => s.isAccessible).length);
+  return new Warehouse(result, width, height);
 }
 
-function getWarehouse(rows: string[]): Shelf[] {
-  return rows.flatMap((row, rowIdx) => {
-    return row.split("").map((shelf, colIdx) => ({
-      x: rowIdx,
-      y: colIdx,
-      isOccupied: shelf === "@",
-      isAccessible: false,
-    }));
-  });
-}
+function getAdjacents(
+  rowIdx: number,
+  colIdx: number,
+  w: Warehouse,
+): { x: number; y: number }[] {
+  const factors = [-1, 0, 1];
+  const result = [];
 
-function isAccessible(shelf: Shelf, warehouse: Shelf[]) : boolean {
-    const adjacent = getAdjacents(shelf);
-    const shelves = warehouse.filter((shelf) => {
-        return adjacent.find((v) => v.x === shelf.x && v.y === shelf.y)
-    }).filter((s) => s.isOccupied);
+  for (const xFac of factors) {
+    for (const yFac of factors) {
+      if (xFac === 0 && yFac === 0) {
+        continue;
+      }
 
-    //console.debug("Adjacents:", shelf.x, shelf.y, shelves);
-    return shelf.isOccupied && shelves.length < 4;
-}
+      const x = rowIdx + xFac;
+      const y = colIdx + yFac;
 
-function getAdjacents(shelf: Shelf) : {x: number, y:number}[] {
-    const result = [
-        {x: shelf.x, y: shelf.y - 1},
-        {x: shelf.x, y: shelf.y + 1},
-        {x: shelf.x + 1, y: shelf.y - 1},
-        {x: shelf.x + 1, y: shelf.y},
-        {x: shelf.x + 1, y: shelf.y + 1},
-    ];
-
-    if (shelf.x > 0) {
-    result.push({x: shelf.x - 1, y: shelf.y - 1},
-        {x: shelf.x - 1, y: shelf.y},
-        {x: shelf.x - 1, y: shelf.y + 1})
+      if (x >= 0 && x < w.height && y >= 0 && y < w.width) {
+        result.push({x,y});
+      }
     }
-    
-    return result;
-}
+  }
 
-function display(s: Shelf) {
-    const seperator = s.y === 0  ? "\n" : "";
-    if (s.isAccessible) {
-        return `${seperator}x`;
-    } else if (s.isOccupied) {
-        return `${seperator}@`;
-    } else {
-        return `${seperator}.`;
-    }
+  return result;
 }
