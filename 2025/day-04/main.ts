@@ -13,31 +13,38 @@ const real_input = await Deno.readTextFile("./day-04/input.txt");
 
 class Warehouse {
   constructor(
-    public readonly shelves: boolean[][],
+    public readonly shelves: number[][],
     public readonly width: number,
     public readonly height: number
   ) {}
 
-  isAccessible(x: number, y: number) : boolean {
-    const isFilled = this.shelves[x][y];
-    const adjacents = getAdjacents(x, y, this);
+  isAccessible(x: number, y: number): boolean {
+    const isFilled = this.shelves[x][y] > 0;
+    const adjacents = getAdjacents(x, y, this.width, this.height);
 
     //console.debug(adjacent);
-    return isFilled && adjacents.map((a) => {
-      return this.shelves[a.x][a.y]
-    }).filter(a => a === true).length < 4;
-  }
+    return (
+      isFilled &&
+      adjacents
+        .map((a) => {
+          return this.shelves[a.x][a.y];
+        })
+        .filter((a) => a > 0).length < 4
+    );
+  } 
 
   toString(): string[] {
     return this.shelves.map((r) => {
-      return r.map((v) => (v ? "@" : ".")).join("");
+      return r.map((v) => (v > 1 ? "@" : ".")).join("");
     });
   }
 }
 
 if (import.meta.main) {
-  const input = real_input;
-  const warehouse: Warehouse = createWarehouse(input.split("\n"));
+  const input = test_input;
+  const parsed: boolean[][] = parseInput(input.split("\n"));
+
+  const warehouse: Warehouse = createWarehouse(parsed);
 
   console.debug(warehouse.toString().join("\n"));
 
@@ -48,20 +55,40 @@ if (import.meta.main) {
   });
 
   //console.debug(result.map((s) => s.map((x) => x?"x":".").join("")).join("\n"));
-  console.log("Result:", result.flatMap(r => r.filter(c => c === true)).length);
+  console.log(
+    "Result:",
+    result.flatMap((r) => r.filter((c) => c === true)).length
+  );
 }
 
-function createWarehouse(rows: string[]): Warehouse {
-  const height = rows.length;
-  const width = rows[0].split("").length;
-
-  const result: boolean[][] = [];
-
-  for (let rowIdx = 0; rowIdx < height; rowIdx++) {
-    const cols: boolean[] = rows[rowIdx].split("").map((column) => {
+function parseInput(rows: string[]): boolean[][] {
+  return rows.map((row) => {
+    return row.split("").map((column) => {
       return column === "@" ? true : false;
     });
-    result.push(cols);
+  });
+}
+
+function createWarehouse(shelves: boolean[][]): Warehouse {
+  const height = shelves.length;
+  const width = shelves[0].length;
+
+  const result: number[][] = [];
+
+  for (let rowIdx = 0; rowIdx < height; rowIdx++) {
+    const row: number[] = [];
+    for (let columIdx = 0; columIdx < width; columIdx++) {
+      const self = shelves[rowIdx][columIdx];
+
+      const adjacents = getAdjacents(rowIdx, columIdx, height, width);
+      const value = adjacents
+        .map((a) => {
+          return shelves[a.x][a.y];
+        })
+        .filter((v) => v).length;
+      row.push(self ? value + 1 : 0);
+    }
+    result.push(row);
   }
 
   return new Warehouse(result, width, height);
@@ -70,7 +97,8 @@ function createWarehouse(rows: string[]): Warehouse {
 function getAdjacents(
   rowIdx: number,
   colIdx: number,
-  w: Warehouse,
+  height: number,
+  width: number
 ): { x: number; y: number }[] {
   const factors = [-1, 0, 1];
   const result = [];
@@ -84,8 +112,8 @@ function getAdjacents(
       const x = rowIdx + xFac;
       const y = colIdx + yFac;
 
-      if (x >= 0 && x < w.height && y >= 0 && y < w.width) {
-        result.push({x,y});
+      if (x >= 0 && x < height && y >= 0 && y < width) {
+        result.push({ x, y });
       }
     }
   }
