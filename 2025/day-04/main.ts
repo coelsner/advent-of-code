@@ -18,20 +18,13 @@ class Warehouse {
     public readonly height: number
   ) {}
 
-  isAccessible(x: number, y: number): boolean {
-    const isFilled = this.shelves[x][y] > 0;
-    const adjacents = getAdjacents(x, y, this.width, this.height);
-
-    //console.debug(adjacent);
-    return (
-      isFilled &&
-      adjacents
-        .map((a) => {
-          return this.shelves[a.x][a.y];
-        })
-        .filter((a) => a > 0).length < 4
-    );
-  } 
+  getAccessible(): { x: number; y: number }[] {
+    return this.shelves.flatMap((r, rowIdx) => {
+      return r.flatMap((c, colIdx) => {
+        return c > 0 && c < 5 ? [{ x: rowIdx, y: colIdx }] : [];
+      });
+    });
+  }
 
   toString(): string[] {
     return this.shelves.map((r) => {
@@ -48,17 +41,8 @@ if (import.meta.main) {
 
   console.debug(warehouse.toString().join("\n"));
 
-  const result = warehouse.shelves.map((r, rowIdx) => {
-    return r.map((c, colIdx) => {
-      return warehouse.isAccessible(rowIdx, colIdx);
-    });
-  });
-
-  //console.debug(result.map((s) => s.map((x) => x?"x":".").join("")).join("\n"));
-  console.log(
-    "Result:",
-    result.flatMap((r) => r.filter((c) => c === true)).length
-  );
+  const accessible = warehouse.getAccessible();
+  console.log("Result:", accessible.length);
 }
 
 function parseInput(rows: string[]): boolean[][] {
