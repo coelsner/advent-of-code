@@ -57,23 +57,15 @@ function createWarehouse(shelves: boolean[][]): Warehouse {
   const height = shelves.length;
   const width = shelves[0].length;
 
-  const result: number[][] = [];
-
-  for (let rowIdx = 0; rowIdx < height; rowIdx++) {
-    const row: number[] = [];
-    for (let columIdx = 0; columIdx < width; columIdx++) {
-      const self = shelves[rowIdx][columIdx];
-
-      const adjacents = getAdjacents(rowIdx, columIdx, height, width);
-      const value = adjacents
-        .map((a) => {
-          return shelves[a.x][a.y];
-        })
-        .filter((v) => v).length;
-      row.push(self ? value + 1 : 0);
-    }
-    result.push(row);
-  }
+  const result: number[][] = shelves.map((r, rowIdx) => {
+    return r.map((c, colIdx) => {
+      if (c === false) {
+        return 0;
+      }
+      const adjacents = getAdjacents(rowIdx, colIdx, height, width)
+      return adjacents.map((a) => shelves[a.x][a.y]).filter(v => v).length + 1
+    })
+  });
 
   return new Warehouse(result, width, height);
 }
