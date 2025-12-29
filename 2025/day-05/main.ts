@@ -1,4 +1,4 @@
-import { Range } from "./Range.ts";
+import { combineRanges, Range } from "./Range.ts";
 
 const test_input = `3-5
 10-14
@@ -47,8 +47,7 @@ if (import.meta.main) {
     ranges.length,
     "Fresh:",
     freshIngredients.size,
-    "List: ",
-    freshList,
+    "Part 2: ",
     freshCount
   );
 }
@@ -60,13 +59,7 @@ function importRange(ranges: Range[], line: string): Range[] {
   }
 
   const newRange = new Range(start, end);
-  const matching = ranges.findIndex((r) => r.intersect(newRange));
-  if (matching >= 0) {
-    const existing = ranges[matching];
-    return ranges.toSpliced(matching, 1, existing.update(start, end));
-  } else {
-    return ranges.concat(newRange);
-  }
+  return combineRanges(ranges, newRange);
 }
 
 function inRange(ranges: Range[], line: string): boolean {

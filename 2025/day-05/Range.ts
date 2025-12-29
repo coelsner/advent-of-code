@@ -1,4 +1,3 @@
-
 export class Range {
   constructor(public readonly start: number, public readonly end: number) {
     if (end < start) {
@@ -19,12 +18,26 @@ export class Range {
     );
   }
 
-  update(newStart: number, newEnd: number): Range {
-    const range : number[] = [this.start, newStart, this.end, newEnd].toSorted((a,b) => a-b);
-    return new Range(range[0], range[3]);
+  combine(range: Range): Range {
+    const numbers: number[] = [
+      this.start,
+      range.start,
+      this.end,
+      range.end,
+    ].toSorted((a, b) => a - b);
+    return new Range(numbers[0], numbers[3]);
   }
 
   diff(): number {
     return this.end - this.start + 1;
   }
+}
+
+export function combineRanges(ranges: Range[], newRange: Range): Range[] {
+  const combined = ranges
+    .filter((r) => r.intersect(newRange))
+    .reduce((prev, curr) => prev.combine(curr), newRange);
+
+  const remaining = ranges.filter((r) => !r.intersect(newRange));
+  return remaining.concat(combined);
 }
