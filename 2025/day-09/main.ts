@@ -1,4 +1,3 @@
-
 const test_input = `7,1
 11,1
 11,7
@@ -8,7 +7,7 @@ const test_input = `7,1
 2,3
 7,3`;
 
-// Solution Part 01: 
+// Solution Part 01:
 //   Rectangle {
 //     start: Tile { x: 83899, y: 85263 },
 //     end: Tile { x: 16133, y: 15044 },
@@ -18,7 +17,7 @@ const test_input = `7,1
 //     area: 4758598740
 //   },
 
-const real_input = await Deno.readTextFile("./day-09/input.txt")
+const real_input = await Deno.readTextFile("./day-09/input.txt");
 
 class Tile {
   public readonly x: number;
@@ -43,14 +42,12 @@ class Rectangle {
     public readonly start: Tile,
     public readonly end: Tile,
   ) {
-    this.distance = Math.sqrt(
-      Math.pow(this.end.x - this.start.x, 2) +
-        Math.pow(this.end.y - this.start.y, 2),
-    );
+    this.distance = Math.pow(this.end.x - this.start.x, 2) +
+      Math.pow(this.end.y - this.start.y, 2);
 
     this.a = Math.abs(this.end.x - this.start.x) + 1;
     this.b = Math.abs(this.end.y - this.start.y) + 1;
-    
+
     this.area = this.a * this.b;
   }
 }
