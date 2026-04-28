@@ -7,6 +7,7 @@
     "day-05": "deno run --watch --allow-read day-05/main.ts",
     "day-06": "deno run --watch --allow-read day-06/main.ts",
     "day-07": "deno run --watch --allow-read day-07/main.ts",
+    "day-08": "deno run --watch --allow-read day-08/main.ts",
     "day-09": "deno run --watch --allow-read day-09/main.ts"
   },
   "imports": {
